@@ -1,25 +1,10 @@
 import { useEffect, useState } from 'react';
 import { logEvent } from '../lib/analytics';
 import { CATEGORIES } from '../lib/categories';
+import { formatEventDate, formatStamp } from '../lib/dates';
 import { postUrl, useCopyLink } from '../lib/share';
 
 const CLAMP_LENGTH = 180;
-
-function formatStamp(iso) {
-  return new Date(iso)
-    .toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-    .toUpperCase();
-}
-
-function formatEventDate(dateStr) {
-  // Parse as local date, not UTC midnight.
-  const [y, m, d] = dateStr.split('-').map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString('en-US', {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-  });
-}
 
 export default function PostCard({ post, focused = false }) {
   const [expanded, setExpanded] = useState(false);

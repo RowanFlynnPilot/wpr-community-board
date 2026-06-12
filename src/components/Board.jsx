@@ -6,6 +6,10 @@ import CategoryFilter from './CategoryFilter';
 import PostCard from './PostCard';
 import SubmitForm from './SubmitForm';
 
+// Captured once: "this week" is relative to when the reader arrived,
+// which keeps render pure.
+const PAGE_LOADED_AT = Date.now();
+
 export default function Board() {
   const [posts, setPosts] = useState(null);
   const [error, setError] = useState(null);
@@ -49,7 +53,7 @@ export default function Board() {
 
   const pulse = useMemo(() => {
     if (!posts || posts.length === 0) return null;
-    const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const weekAgo = PAGE_LOADED_AT - 7 * 24 * 60 * 60 * 1000;
     const recent = posts.filter((p) => new Date(p.published_at).getTime() > weekAgo);
     const neighbors = new Set(recent.map((p) => p.contact_name)).size;
     if (recent.length === 0) return null;

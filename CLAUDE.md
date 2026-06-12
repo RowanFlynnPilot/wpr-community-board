@@ -88,12 +88,15 @@ pg_cron (daily)─update─> posts                     ── published -> expir
 ```bash
 npm install
 npm run dev        # local dev at http://localhost:5173 (board) and /#/admin (desk)
+npm run lint       # ESLint — runs in CI before every deploy
+npm test           # Vitest — incl. the category-enum sync tripwire
 npm run build      # static build to dist/
 ```
 
 ## Files that matter
 
 - `supabase/migrations/001_init.sql` — schema, security, RPCs, analytics, views, cron
+- `supabase/migrations/002_hardening.sql` — analytics rate limit, event-date bounds, publish errors
 - `src/components/Board.jsx` — container: fetch, filter state, pulse, modal
 - `src/components/SubmitForm.jsx` — the one write path from the public
 - `src/admin/AdminPage.jsx` — sign-in + moderation desk

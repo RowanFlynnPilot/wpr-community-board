@@ -1,15 +1,39 @@
 # The Community Board — Wausau Pilot & Review
 
+[![Deploy](https://github.com/RowanFlynnPilot/wpr-community-board/actions/workflows/deploy.yml/badge.svg)](https://github.com/RowanFlynnPilot/wpr-community-board/actions/workflows/deploy.yml)
+**[Live board →](https://rowanflynnpilot.github.io/wpr-community-board/)**
+
 A moderated digital bulletin board for the Wausau metro. Neighbors post notes —
 events, lost & found, free & for sale, volunteer calls, shout-outs, milestones —
 and every note is read by an editor before it's pinned. That editorial review is
 the product: it's what a newspaper's bulletin board has that Facebook groups and
 Nextdoor never will.
 
+![The Community Board](docs/board.png)
+
 **Stack:** Vite + React frontend on GitHub Pages (same pattern as
 `wpr-gas-prices`), Supabase Postgres for data, auth, analytics, and the daily
-expiry job. No server, no repo-side cron. See `CLAUDE.md` for the architecture
-rules before changing anything.
+expiry job. No server, no repo-side cron, $0/month at launch scale. See
+`CLAUDE.md` for the architecture rules before changing anything, and
+[docs/case-study.md](docs/case-study.md) for the long-form write-up.
+
+## Architecture
+
+Every arrow below is the *only* path of its kind — one way to read, one way
+to submit, one way to publish:
+
+```
+Reader browser ──read──> board_posts (view)        ── published rows, public columns only
+Reader browser ──rpc───> submit_post()             ── the ONLY insert path (honeypot + rate limit)
+Editor browser ──rpc───> publish_post()/reject_post() ── the ONLY publish path (computes expires_at)
+Editor browser ──table─> posts                     ── pin toggle / take-down / pending copy-edit
+All browsers   ──rpc───> log_event()               ── first-party analytics, no PII, rate-limited
+pg_cron (daily)─update─> posts                     ── published -> expired past expires_at
+```
+
+Anonymous clients have no table grants at all: the published view and two
+RPCs (submit a note, log an event) are the entire public surface of the
+database.
 
 ## Setup
 
@@ -82,6 +106,18 @@ Three views turn raw events into funder-ready numbers:
 Monthly export for funders: SQL Editor → `select * from grant_report;` →
 Download CSV. The metric definitions match the proposal document one-to-one.
 
+## Development
+
+```bash
+npm run dev    # local dev (board at /, desk at /#/admin)
+npm run lint   # ESLint (react-hooks rules included)
+npm test       # Vitest — incl. the category-enum sync tripwire
+npm run build  # static build to dist/
+```
+
+Lint and tests run in CI before every deploy; a red check means nothing
+ships.
+
 ## Design
 
 Type and color come straight from wausaupilotandreview.com and the typewriter
@@ -93,3 +129,9 @@ leaves the site. The signature element is the **editor's stamp** on every card �
 `APPROVED · JUN 9` — because human review is the differentiator and the design
 should say so. `design/preview.html` is a self-contained comp: open it in any
 browser, no build required. Show it to the editor before anything ships.
+
+## License
+
+MIT — see [LICENSE](LICENSE). If you run a local newsroom and want a
+community board of your own, fork away; the setup section above is the
+whole deployment story.

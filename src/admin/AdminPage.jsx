@@ -65,14 +65,16 @@ function Desk() {
   const [posts, setPosts] = useState(null);
   const [error, setError] = useState(null);
 
-  async function load() {
-    const { data, error } = await supabase
+  function load() {
+    supabase
       .from('posts')
       .select('*')
       .in('status', ['pending', 'published', 'rejected'])
-      .order('created_at', { ascending: false });
-    if (error) setError(error.message);
-    else setPosts(data);
+      .order('created_at', { ascending: false })
+      .then(({ data, error }) => {
+        if (error) setError(error.message);
+        else setPosts(data);
+      });
   }
 
   useEffect(() => {
