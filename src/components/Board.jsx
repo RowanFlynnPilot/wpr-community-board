@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { logEvent } from '../lib/analytics';
-import { CATEGORIES } from '../lib/categories';
+import { categoryLabel } from '../lib/categories';
+import { I18nProvider, LANGS, STRINGS, readLang, storeLang } from '../lib/i18n';
 import CategoryFilter from './CategoryFilter';
 import PostCard from './PostCard';
 import SubmitForm from './SubmitForm';
@@ -10,12 +11,18 @@ import SubmitForm from './SubmitForm';
 // which keeps render pure.
 const PAGE_LOADED_AT = Date.now();
 
+// The folio date follows the board language where the browser can.
+const DATE_LOCALES = { en: 'en-US', es: 'es-US', hmn: 'en-US' };
+
 export default function Board() {
   const [posts, setPosts] = useState(null);
   const [error, setError] = useState(null);
   const [activeCategory, setActiveCategory] = useState('all');
   const [showSubmit, setShowSubmit] = useState(false);
   const [focusId, setFocusId] = useState(null);
+  const [lang, setLang] = useState(readLang);
+
+  const t = STRINGS[lang];
 
   useEffect(() => {
     logEvent('board_view');
@@ -70,6 +77,11 @@ export default function Board() {
     logEvent('submit_open');
   }
 
+  function changeLang(next) {
+    setLang(next);
+    storeLang(next);
+  }
+
   if (error) {
     return (
       <div className="board">
@@ -81,74 +93,90 @@ export default function Board() {
   }
 
   return (
-    <div className="board">
-      <header className="board-header">
-        <img className="board-mark" src="./wpr-typewriter.png" alt="Wausau Pilot & Review" />
-        <div className="board-titles">
-          <p className="board-eyebrow">Wausau Pilot &amp; Review</p>
-          <h1 className="board-title">The Community Board</h1>
-          <p className="board-tagline">
-            Notes from your neighbors. Every one is read by an editor before it&rsquo;s pinned.
-          </p>
-        </div>
-        <button className="board-cta" onClick={openSubmit}>
-          Post a note
-        </button>
-      </header>
-
-      <p className="board-pulse">
-        <span>
-          {pulse ? (
-            <>
-              <span className="pulse-dot" aria-hidden="true" /> This week:{' '}
-              <strong>{pulse.notes}</strong> new {pulse.notes === 1 ? 'note' : 'notes'} from{' '}
-              <strong>{pulse.neighbors}</strong> {pulse.neighbors === 1 ? 'neighbor' : 'neighbors'}
-            </>
-          ) : (
-            'The board is open.'
-          )}
-        </span>
-        <span className="pulse-date">
-          {new Date()
-            .toLocaleDateString('en-US', {
-              weekday: 'long',
-              month: 'long',
-              day: 'numeric',
-              year: 'numeric',
-            })
-            .toUpperCase()}
-        </span>
-      </p>
-
-      <CategoryFilter active={activeCategory} onSelect={selectCategory} posts={posts || []} />
-
-      {posts === null ? (
-        <p className="board-loading">Pinning up the latest notes&hellip;</p>
-      ) : visible.length === 0 ? (
-        <div className="board-empty">
-          <p>
-            Nothing pinned under {CATEGORIES[activeCategory]?.label || 'this category'} right now.
-          </p>
-          <button className="link-button" onClick={openSubmit}>
-            Be the first to post one
+    <I18nProvider value={{ lang, t }}>
+      <div className="board" lang={lang}>
+        <header className="board-header">
+          <img className="board-mark" src="./wpr-typewriter.png" alt="Wausau Pilot & Review" />
+          <div className="board-titles">
+            <p className="board-eyebrow">Wausau Pilot &amp; Review</p>
+            <h1 className="board-title">The Community Board</h1>
+            <p className="board-tagline">{t.tagline}</p>
+          </div>
+          <button className="board-cta" onClick={openSubmit}>
+            {t.cta}
           </button>
-        </div>
-      ) : (
-        <div className="card-grid">
-          {visible.map((post) => (
-            <PostCard key={post.id} post={post} focused={post.id === focusId} />
-          ))}
-        </div>
-      )}
+        </header>
 
-      <footer className="board-footer">
-        <p>
-          House rules: be neighborly. No commercial ads, campaigning, or personal disputes —
-          those belong in <a href="https://wausaupilotandreview.com/contact/">letters to the editor</a>.
+        <p className="board-pulse">
+          <span>
+            {pulse ? (
+              <>
+                <span className="pulse-dot" aria-hidden="true" /> {t.thisWeek}{' '}
+                <strong>{pulse.notes}</strong> {t.newNotes(pulse.notes)} {t.fromWord}{' '}
+                <strong>{pulse.neighbors}</strong> {t.neighborsWord(pulse.neighbors)}
+              </>
+            ) : (
+              t.boardOpen
+            )}
+          </span>
+          <span className="pulse-date">
+            {new Date()
+              .toLocaleDateString(DATE_LOCALES[lang], {
+                weekday: 'long',
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric',
+              })
+              .toUpperCase()}
+          </span>
         </p>
-      </footer>
 
-      {showSubmit && <SubmitForm onClose={() => setShowSubmit(false)} />}
-    </div>
+        <CategoryFilter active={activeCategory} onSelect={selectCategory} posts={posts || []} />
+
+        {posts === null ? (
+          <p className="board-loading">{t.loading}</p>
+        ) : visible.length === 0 ? (
+          <div className="board-empty">
+            <p>
+              {t.emptyUnder(
+                activeCategory === 'all' ? t.allNotes : categoryLabel(activeCategory, lang)
+              )}
+            </p>
+            <button className="link-button" onClick={openSubmit}>
+              {t.beFirst}
+            </button>
+          </div>
+        ) : (
+          <div className="card-grid">
+            {visible.map((post) => (
+              <PostCard key={post.id} post={post} focused={post.id === focusId} />
+            ))}
+          </div>
+        )}
+
+        <footer className="board-footer">
+          <p>
+            {t.houseRulesPre}
+            <a href="https://wausaupilotandreview.com/contact/">{t.houseRulesLink}</a>
+            {t.houseRulesPost}
+          </p>
+          <p className="board-privacy">{t.privacyLine}</p>
+          <p className="lang-row" aria-label="Language">
+            {LANGS.map(([key, label]) => (
+              <button
+                key={key}
+                className={`link-button ${lang === key ? 'is-current-lang' : ''}`}
+                aria-pressed={lang === key}
+                onClick={() => changeLang(key)}
+              >
+                {label}
+              </button>
+            ))}
+          </p>
+        </footer>
+
+        {showSubmit && <SubmitForm onClose={() => setShowSubmit(false)} />}
+      </div>
+    </I18nProvider>
   );
 }

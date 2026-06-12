@@ -415,6 +415,15 @@ body {
   white-space: pre-line;
 }
 
+/* Clamped in CSS, not by slicing text: the whole note stays in the DOM,
+   so print shows everything. */
+.card-body.is-clamped {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .card-meta {
   display: flex;
   align-items: baseline;
@@ -541,6 +550,28 @@ body {
 
 .board-footer a {
   color: var(--wpr-teal);
+}
+
+.board-privacy {
+  margin-top: 6px;
+  letter-spacing: 0.04em;
+}
+
+.lang-row {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.lang-row .link-button {
+  font-size: 12px;
+}
+
+.lang-row .is-current-lang {
+  color: var(--ink);
+  text-decoration: none;
+  cursor: default;
 }
 
 /* ---------- Modal & form ---------- */
@@ -719,6 +750,22 @@ body {
   color: var(--wpr-red);
 }
 
+.newsletter-snippet {
+  margin-bottom: 16px;
+}
+
+.newsletter-fallback {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 9px 10px;
+  border: 1px solid rgba(17, 17, 17, 0.25);
+  border-radius: 2px;
+  background: #fff;
+  font-family: var(--font-type);
+  font-size: 12px;
+}
+
 /* ---------- The grant report ---------- */
 /* Numbers set in the typewriter voice, ruled like a ledger. */
 
@@ -774,6 +821,56 @@ body {
 
   .form-pair {
     grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- Print: the monthly roundup ---------- */
+/* The editor opens the board, hits Print, and gets clean newsprint for
+   the paper or a PDF: full note text (the clamp lifts), no pins or
+   shadows to waste ink, no buttons that can't be pressed on paper. */
+
+@media print {
+  body {
+    background: #fff;
+  }
+
+  .board {
+    max-width: none;
+    padding: 0;
+  }
+
+  .board-cta,
+  .filter-row,
+  .pulse-dot,
+  .card-actions,
+  .card-body + .link-button,
+  .board-empty .link-button,
+  .lang-row,
+  .modal-backdrop {
+    display: none;
+  }
+
+  .card-grid {
+    columns: 2;
+    column-gap: 16px;
+  }
+
+  .card-grid .card,
+  .card-grid .card:nth-child(odd),
+  .card-grid .card:nth-child(even) {
+    transform: none;
+    box-shadow: none;
+    border: 1px solid #999;
+  }
+
+  .card-grid .card::before {
+    display: none;
+  }
+
+  .card-body.is-clamped {
+    display: block;
+    overflow: visible;
+    -webkit-line-clamp: unset;
   }
 }
 

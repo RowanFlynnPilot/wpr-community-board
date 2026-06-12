@@ -1,19 +1,22 @@
-import { CATEGORIES, CATEGORY_KEYS } from '../lib/categories';
+import { CATEGORIES, CATEGORY_KEYS, categoryLabel } from '../lib/categories';
+import { useI18n } from '../lib/i18n';
 
 export default function CategoryFilter({ active, onSelect, posts }) {
+  const { lang, t } = useI18n();
+
   const counts = posts.reduce((acc, p) => {
     acc[p.category] = (acc[p.category] || 0) + 1;
     return acc;
   }, {});
 
   return (
-    <nav className="filter-row" aria-label="Filter notes by category">
+    <nav className="filter-row" aria-label={t.filterAria}>
       <button
         className={`filter-pill ${active === 'all' ? 'is-active' : ''}`}
         aria-pressed={active === 'all'}
         onClick={() => onSelect('all')}
       >
-        All notes <span className="pill-count">{posts.length}</span>
+        {t.allNotes} <span className="pill-count">{posts.length}</span>
       </button>
       {CATEGORY_KEYS.map((key) => (
         <button
@@ -32,7 +35,7 @@ export default function CategoryFilter({ active, onSelect, posts }) {
             style={{ background: active === key ? '#fff' : CATEGORIES[key].dot }}
             aria-hidden="true"
           />
-          {CATEGORIES[key].label}
+          {categoryLabel(key, lang)}
           {counts[key] ? <span className="pill-count">{counts[key]}</span> : null}
         </button>
       ))}

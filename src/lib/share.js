@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 // Share links point at the page readers actually visit (the WordPress embed
 // page) when VITE_PUBLIC_URL is set; otherwise wherever the app is served.
-const BOARD_URL =
+export const BOARD_URL =
   import.meta.env.VITE_PUBLIC_URL || `${window.location.origin}${window.location.pathname}`;
 
 export function postUrl(id) {

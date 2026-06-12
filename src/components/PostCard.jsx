@@ -1,15 +1,20 @@
 import { useEffect, useState } from 'react';
 import { logEvent } from '../lib/analytics';
-import { CATEGORIES } from '../lib/categories';
+import { categoryLabel, CATEGORIES } from '../lib/categories';
 import { formatEventDate, formatStamp } from '../lib/dates';
+import { useI18n } from '../lib/i18n';
 import { postUrl, useCopyLink } from '../lib/share';
 
+// Bodies longer than this get the CSS line clamp until the reader opens
+// them. Clamping in CSS (not by slicing text) keeps the full note in the
+// DOM, so the print stylesheet can show everything.
 const CLAMP_LENGTH = 180;
 
 export default function PostCard({ post, focused = false }) {
   const [expanded, setExpanded] = useState(false);
   const [contactShown, setContactShown] = useState(false);
   const { copied, fallbackUrl, copy } = useCopyLink(postUrl(post.id));
+  const { lang, t } = useI18n();
 
   const category = CATEGORIES[post.category];
   const needsClamp = post.body.length > CLAMP_LENGTH;
@@ -44,10 +49,10 @@ export default function PostCard({ post, focused = false }) {
       <div className="card-top">
         <span className="card-chip">
           <span className="pill-dot" style={{ background: category.dot }} aria-hidden="true" />
-          {category.label}
-          {post.is_pinned && <span className="card-pick">&#9733; Editor&rsquo;s pick</span>}
+          {categoryLabel(post.category, lang)}
+          {post.is_pinned && <span className="card-pick">&#9733; {t.editorsPick}</span>}
         </span>
-        <span className="card-stamp" title="Reviewed and approved by the editor">
+        <span className="card-stamp" title={t.stampTitle}>
           APPROVED &middot; {formatStamp(post.published_at)}
         </span>
       </div>
@@ -58,13 +63,11 @@ export default function PostCard({ post, focused = false }) {
         <p className="card-event-date">{formatEventDate(post.event_date)}</p>
       )}
 
-      <p className="card-body">
-        {expanded || !needsClamp ? post.body : `${post.body.slice(0, CLAMP_LENGTH).trimEnd()}…`}
-      </p>
+      <p className={`card-body ${needsClamp && !expanded ? 'is-clamped' : ''}`}>{post.body}</p>
 
       {needsClamp && !expanded && (
         <button className="link-button" onClick={expand}>
-          Read the whole note
+          {t.readWhole}
         </button>
       )}
 
@@ -76,7 +79,7 @@ export default function PostCard({ post, focused = false }) {
         <div className="card-actions">
           {post.contact_email && !contactShown && (
             <button className="link-button" onClick={revealContact}>
-              Contact
+              {t.contact}
             </button>
           )}
           {post.contact_email && contactShown && (
@@ -85,7 +88,7 @@ export default function PostCard({ post, focused = false }) {
             </a>
           )}
           <button className="link-button" onClick={share}>
-            {copied ? 'Link copied' : 'Share'}
+            {copied ? t.linkCopied : t.share}
           </button>
         </div>
       </div>
@@ -95,7 +98,7 @@ export default function PostCard({ post, focused = false }) {
           className="card-share-url"
           readOnly
           value={fallbackUrl}
-          aria-label="Link to this note"
+          aria-label={t.linkAria}
           autoFocus
           onFocus={(e) => e.target.select()}
         />

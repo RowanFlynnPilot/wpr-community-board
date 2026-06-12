@@ -66,9 +66,16 @@ database.
    **Rejected** tab keeps the archive.
 6. On the **Published** tab: **Pin to top** marks a note as an Editor's pick
    (red pin, sorts first), **Copy link** grabs the note's share URL for the
-   newsletter, **Take down** removes it immediately.
+   newsletter, **Take down** removes it immediately. **Copy newsletter
+   snippet** builds the whole weekly "This week on the Community Board"
+   block — pinned picks first, deep links included — ready to paste into a
+   Newspack Custom HTML block.
 7. The **Report** tab is the grant table — one row per month, every metric in
    the proposal, with a CSV download for the funder report.
+8. **Print roundup:** open the public board and hit Print. The print
+   stylesheet lifts the text clamp (full notes), drops pins, shadows, and
+   buttons, and lays the cards out two-up — clean enough for the print
+   edition or a PDF.
 
 ## Deploy (GitHub Pages)
 
@@ -87,6 +94,23 @@ there instead of the raw GitHub Pages URL.
 
 See `embed/wordpress-embed.md` for the iframe snippet with auto-height. It's
 the same approach as the gas tracker embed.
+
+## Languages
+
+The public board speaks **English, Español, and Hmoob** — a footer toggle,
+persisted per browser. Wausau has one of the largest Hmong communities per
+capita in the U.S.; lowering the barrier to *contribute* is the point, so
+the submit form and house rules are translated, not just the chrome. The
+editor's desk stays English.
+
+> **Before announcing the languages publicly:** the Spanish and Hmong
+> strings in `src/lib/i18n.js` are first drafts written without native
+> review. Have a fluent reader (the Hmong American Center, a bilingual
+> staffer) check them — it's one file, plainly laid out, and the review
+> itself is a community-engagement story worth telling funders.
+
+There is no i18n framework: one strings object per language, a React
+context, and a test that fails if any language is missing a string.
 
 ## Analytics & grant reporting
 

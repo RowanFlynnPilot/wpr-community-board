@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { logEvent } from '../lib/analytics';
-import { CATEGORIES, CATEGORY_KEYS } from '../lib/categories';
+import { CATEGORY_KEYS, categoryLabel } from '../lib/categories';
+import { useI18n } from '../lib/i18n';
 import Modal from './Modal';
 
 const BODY_MAX = 600;
@@ -23,6 +24,7 @@ export default function SubmitForm({ onClose }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [sent, setSent] = useState(false);
+  const { lang, t } = useI18n();
 
   const isEvent = form.category === 'events';
 
@@ -56,15 +58,15 @@ export default function SubmitForm({ onClose }) {
 
     if (error) {
       if (error.message.includes('RATE_LIMIT')) {
-        setError('You’ve reached the limit of 3 notes in 24 hours. Try again tomorrow.');
+        setError(t.errRateLimit);
       } else if (error.message.includes('EVENT_DATE_RANGE')) {
-        setError('Event dates need to fall within the coming year.');
+        setError(t.errEventRange);
       } else if (error.message.includes('title')) {
-        setError('Titles need to be between 5 and 80 characters.');
+        setError(t.errTitle);
       } else if (error.message.includes('body')) {
-        setError('Notes need to be between 20 and 600 characters.');
+        setError(t.errBody);
       } else if (error.message.includes('event_date')) {
-        setError('Events need a date.');
+        setError(t.errEventDate);
       } else {
         setError(error.message);
       }
@@ -76,34 +78,28 @@ export default function SubmitForm({ onClose }) {
 
   if (sent) {
     return (
-      <Modal label="Note received" onClose={onClose}>
+      <Modal label={t.sentAria} onClose={onClose}>
         <p className="card-stamp">RECEIVED</p>
-        <h2 className="card-title">Sent to the editor&rsquo;s desk</h2>
-        <p className="card-body">
-          Your note is in the queue. The editor reads every submission before it&rsquo;s
-          pinned — most go up within a day. Thanks for posting, neighbor.
-        </p>
+        <h2 className="card-title">{t.sentTitle}</h2>
+        <p className="card-body">{t.sentBody}</p>
         <button className="board-cta" onClick={onClose}>
-          Back to the board
+          {t.backToBoard}
         </button>
       </Modal>
     );
   }
 
   return (
-    <Modal label="Post a note to the Community Board" onClose={onClose}>
+    <Modal label={t.formAria} onClose={onClose}>
       <div className="card-top">
-        <span className="card-chip">New note</span>
+        <span className="card-chip">{t.newNote}</span>
         <button className="link-button" onClick={onClose}>
-          Close
+          {t.close}
         </button>
       </div>
 
-      <h2 className="card-title">Post a note</h2>
-      <p className="form-rules">
-        Be neighborly. No commercial ads, campaigning, or personal disputes. The editor
-        reviews every note before it&rsquo;s pinned.
-      </p>
+      <h2 className="card-title">{t.formTitle}</h2>
+      <p className="form-rules">{t.formRules}</p>
 
       {error && (
         <p className="form-error" role="alert">
@@ -113,11 +109,11 @@ export default function SubmitForm({ onClose }) {
 
       <form onSubmit={submit}>
         <label className="form-label">
-          Category
+          {t.category}
           <select value={form.category} onChange={(e) => update('category', e.target.value)}>
             {CATEGORY_KEYS.map((key) => (
               <option key={key} value={key}>
-                {CATEGORIES[key].label}
+                {categoryLabel(key, lang)}
               </option>
             ))}
           </select>
@@ -125,7 +121,7 @@ export default function SubmitForm({ onClose }) {
 
         {isEvent && (
           <label className="form-label">
-            Event date
+            {t.eventDate}
             <input
               type="date"
               required
@@ -136,38 +132,38 @@ export default function SubmitForm({ onClose }) {
         )}
 
         <label className="form-label">
-          Title
+          {t.title}
           <input
             type="text"
             required
             minLength={5}
             maxLength={80}
-            placeholder="Found: gray tabby near Franklin Elementary"
+            placeholder={t.titlePlaceholder}
             value={form.title}
             onChange={(e) => update('title', e.target.value)}
           />
         </label>
 
         <label className="form-label">
-          Your note
+          {t.yourNote}
           <textarea
             rows={5}
             required
             minLength={20}
             maxLength={BODY_MAX}
-            placeholder="The details a neighbor would need&hellip;"
+            placeholder={t.notePlaceholder}
             value={form.body}
             onChange={(e) => update('body', e.target.value)}
           />
-          <span className="form-count">{BODY_MAX - form.body.length} characters left</span>
+          <span className="form-count">{t.charsLeft(BODY_MAX - form.body.length)}</span>
         </label>
 
         <label className="form-label">
-          Neighborhood or area <span className="form-optional">(optional)</span>
+          {t.neighborhood} <span className="form-optional">{t.optional}</span>
           <input
             type="text"
             maxLength={60}
-            placeholder="Rib Mountain, East side, Kronenwetter&hellip;"
+            placeholder={t.neighborhoodPlaceholder}
             value={form.neighborhood}
             onChange={(e) => update('neighborhood', e.target.value)}
           />
@@ -175,7 +171,7 @@ export default function SubmitForm({ onClose }) {
 
         <div className="form-pair">
           <label className="form-label">
-            Your name <span className="form-optional">(appears on the note)</span>
+            {t.yourName} <span className="form-optional">{t.nameNote}</span>
             <input
               type="text"
               required
@@ -186,7 +182,7 @@ export default function SubmitForm({ onClose }) {
             />
           </label>
           <label className="form-label">
-            Email <span className="form-optional">(never shown unless you say so)</span>
+            {t.email} <span className="form-optional">{t.emailNote}</span>
             <input
               type="email"
               required
@@ -202,7 +198,7 @@ export default function SubmitForm({ onClose }) {
             checked={form.show_contact}
             onChange={(e) => update('show_contact', e.target.checked)}
           />
-          Let readers contact me at this email
+          {t.contactOk}
         </label>
 
         {/* Honeypot: hidden from people, irresistible to bots. */}
@@ -218,7 +214,7 @@ export default function SubmitForm({ onClose }) {
         />
 
         <button type="submit" className="board-cta" disabled={submitting}>
-          {submitting ? 'Sending…' : 'Send to the editor'}
+          {submitting ? t.sending : t.send}
         </button>
       </form>
     </Modal>

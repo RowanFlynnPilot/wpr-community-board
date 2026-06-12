@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { CATEGORIES } from '../lib/categories';
-import { postUrl, useCopyLink } from '../lib/share';
+import { CATEGORIES, categoryLabel } from '../lib/categories';
+import { BOARD_URL, postUrl, useCopyLink } from '../lib/share';
 
 export default function AdminPage() {
   const [session, setSession] = useState(null);
@@ -156,6 +156,10 @@ function Desk() {
         ))}
       </nav>
 
+      {tab === 'published' && byStatus('published').length > 0 && (
+        <NewsletterSnippet posts={byStatus('published')} />
+      )}
+
       {tab === 'report' ? (
         <ReportTab />
       ) : posts === null ? (
@@ -198,7 +202,7 @@ function AdminCard({ post, onApprove, onReject, onSaveEdit, onTogglePin, onTakeD
       <div className="card-top">
         <span className="card-chip">
           <span className="pill-dot" style={{ background: category.dot }} aria-hidden="true" />
-          {category.label}
+          {categoryLabel(post.category)}
         </span>
         <span className="card-stamp">
           {new Date(post.created_at).toLocaleString('en-US', {
@@ -331,6 +335,73 @@ function AdminCard({ post, onApprove, onReject, onSaveEdit, onTogglePin, onTakeD
         </>
       )}
     </article>
+  );
+}
+
+// The newsletter loop, operationalized: one click copies a ready-to-paste
+// HTML block — pinned picks first, then the newest — for the weekly
+// newsletter's Custom HTML block. Deep links open the exact card.
+function escapeHtml(text) {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function newsletterHtml(posts) {
+  const picks = [...posts]
+    .sort(
+      (a, b) =>
+        (b.is_pinned ? 1 : 0) - (a.is_pinned ? 1 : 0) ||
+        new Date(b.published_at) - new Date(a.published_at)
+    )
+    .slice(0, 5);
+  const items = picks
+    .map((p) => {
+      const teaser = p.body.length > 90 ? `${p.body.slice(0, 90).trimEnd()}…` : p.body;
+      return `  <li><a href="${postUrl(p.id)}">${escapeHtml(p.title)}</a> — ${escapeHtml(teaser)}</li>`;
+    })
+    .join('\n');
+  return [
+    '<h3>This week on the Community Board</h3>',
+    '<ul>',
+    items,
+    '</ul>',
+    `<p><a href="${BOARD_URL}">See all the notes →</a></p>`,
+  ].join('\n');
+}
+
+function NewsletterSnippet({ posts }) {
+  const [copied, setCopied] = useState(false);
+  const [fallback, setFallback] = useState(null);
+
+  function copySnippet() {
+    const html = newsletterHtml(posts);
+    if (!navigator.clipboard) {
+      setFallback(html);
+      return;
+    }
+    navigator.clipboard
+      .writeText(html)
+      .then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      })
+      .catch(() => setFallback(html));
+  }
+
+  return (
+    <div className="newsletter-snippet">
+      <button className="link-button" onClick={copySnippet}>
+        {copied ? 'Snippet copied — paste into a Custom HTML block' : 'Copy newsletter snippet'}
+      </button>
+      {fallback && (
+        <textarea
+          className="newsletter-fallback"
+          readOnly
+          rows={8}
+          value={fallback}
+          onFocus={(e) => e.target.select()}
+        />
+      )}
+    </div>
   );
 }
 

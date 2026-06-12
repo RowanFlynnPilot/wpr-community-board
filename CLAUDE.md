@@ -67,8 +67,12 @@ pg_cron (daily)─update─> posts                     ── published -> expir
   copy-editing a *pending* note's `title`/`body` before approval. The
   Postgres CHECK constraints still validate edited text.
 - Category definitions live in two places by necessity: the Postgres enum
-  (source of truth) and `src/lib/categories.js` (display). Adding a category
-  means a migration first, then the display map.
+  (source of truth) and `src/lib/categories.js` (display, with labels in all
+  three board languages). Adding a category means a migration first, then the
+  display map — the test suite fails if they drift.
+- Board copy lives in `src/lib/i18n.js`, one strings object per language
+  (en/es/hmn), no i18n framework. The editor's desk stays English. Adding a
+  string means adding it to all three languages — the test suite enforces it.
 - Analytics are fire-and-forget. They must never block or break the UI;
   failures log to console with the event name.
 
@@ -100,5 +104,6 @@ npm run build      # static build to dist/
 - `src/components/Board.jsx` — container: fetch, filter state, pulse, modal
 - `src/components/SubmitForm.jsx` — the one write path from the public
 - `src/admin/AdminPage.jsx` — sign-in + moderation desk
+- `src/lib/i18n.js` — all board copy in three languages; es/hmn await native review
 - `src/styles/board.css` — the entire design system; tokens at the top
 - `design/preview.html` — static design comp, no build needed; open in a browser
