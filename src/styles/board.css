@@ -604,7 +604,9 @@ body {
 .form-label input,
 .form-label select,
 .form-label textarea,
-.admin-actions input {
+.admin-actions input,
+.admin-edit input,
+.admin-edit textarea {
   display: block;
   width: 100%;
   margin-top: 6px;
@@ -706,6 +708,55 @@ body {
 .admin-actions .board-cta {
   padding: 9px 16px;
   font-size: 13px;
+}
+
+.admin-reject-reason {
+  margin: 10px 0 0;
+  font-family: var(--font-type);
+  font-size: 13px;
+  color: var(--wpr-red);
+}
+
+/* ---------- The grant report ---------- */
+/* Numbers set in the typewriter voice, ruled like a ledger. */
+
+.report-scroll {
+  overflow-x: auto;
+  margin-bottom: 14px;
+}
+
+.report-table {
+  border-collapse: collapse;
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--rule);
+  font-family: var(--font-type);
+  font-size: 13px;
+}
+
+.report-table th {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-align: right;
+  border-bottom: 2px solid var(--ink);
+  padding: 9px 10px;
+  white-space: nowrap;
+}
+
+.report-table td {
+  text-align: right;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--rule);
+  white-space: nowrap;
+}
+
+.report-table th:first-child,
+.report-table td:first-child {
+  text-align: left;
+  font-weight: 700;
 }
 
 /* ---------- Responsive & motion ---------- */

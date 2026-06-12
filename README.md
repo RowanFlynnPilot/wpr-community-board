@@ -32,12 +32,17 @@ rules before changing anything.
 1. Bookmark the board URL with `#/admin` on the end — that's the desk.
 2. Sign in. The **Pending** tab shows everything waiting, newest first, with
    the submitter's email (readers never see it unless the submitter opted in).
-3. **Approve & pin to board** publishes it. Events stay up through the day
+3. **Edit** fixes typos before a note goes up — copy-edit like any newspaper.
+4. **Approve & pin to board** publishes it. Events stay up through the day
    after the event; everything else stays up 21 days, then expires on its own
    at 4:17 a.m. No stale garage sales, ever.
-4. **Reject** asks for a reason — it's kept on file, not sent to anyone.
-5. On the **Published** tab: **Pin to top** marks a note as an Editor's pick
-   (teal edge, sorts first), **Take down** removes it immediately.
+5. **Reject** asks for a reason — it's kept on file, not sent to anyone. The
+   **Rejected** tab keeps the archive.
+6. On the **Published** tab: **Pin to top** marks a note as an Editor's pick
+   (red pin, sorts first), **Copy link** grabs the note's share URL for the
+   newsletter, **Take down** removes it immediately.
+7. The **Report** tab is the grant table — one row per month, every metric in
+   the proposal, with a CSV download for the funder report.
 
 ## Deploy (GitHub Pages)
 

@@ -50,7 +50,7 @@ database* (daily post expiry).
 Reader browser ──read──> board_posts (view)        ── published rows, public columns only
 Reader browser ──rpc───> submit_post()             ── the ONLY insert path (honeypot + rate limit)
 Editor browser ──rpc───> publish_post()/reject_post() ── the ONLY publish path (computes expires_at)
-Editor browser ──table─> posts                     ── pin toggle / take-down only (no derived state)
+Editor browser ──table─> posts                     ── pin toggle / take-down / pending copy-edit (no derived state)
 All browsers   ──rpc───> log_event()               ── first-party analytics, no PII
 pg_cron (daily)─update─> posts                     ── published -> expired past expires_at
 ```
@@ -63,7 +63,9 @@ pg_cron (daily)─update─> posts                     ── published -> expir
 - `publish_post()` is the only place `published_at`/`expires_at` are computed.
   Never set them from the frontend or in an UPDATE.
 - Direct table updates from the admin are allowed only for state with no
-  derived logic: `is_pinned` toggle and take-down (`status = 'expired'`).
+  derived logic: `is_pinned` toggle, take-down (`status = 'expired'`), and
+  copy-editing a *pending* note's `title`/`body` before approval. The
+  Postgres CHECK constraints still validate edited text.
 - Category definitions live in two places by necessity: the Postgres enum
   (source of truth) and `src/lib/categories.js` (display). Adding a category
   means a migration first, then the display map.

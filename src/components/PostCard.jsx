@@ -1,13 +1,9 @@
 import { useEffect, useState } from 'react';
 import { logEvent } from '../lib/analytics';
 import { CATEGORIES } from '../lib/categories';
+import { postUrl, useCopyLink } from '../lib/share';
 
 const CLAMP_LENGTH = 180;
-
-// Share links point at the page readers actually visit (the WordPress embed
-// page) when VITE_PUBLIC_URL is set; otherwise wherever the app is served.
-const BOARD_URL =
-  import.meta.env.VITE_PUBLIC_URL || `${window.location.origin}${window.location.pathname}`;
 
 function formatStamp(iso) {
   return new Date(iso)
@@ -28,8 +24,7 @@ function formatEventDate(dateStr) {
 export default function PostCard({ post, focused = false }) {
   const [expanded, setExpanded] = useState(false);
   const [contactShown, setContactShown] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [shareUrl, setShareUrl] = useState(null);
+  const { copied, fallbackUrl, copy } = useCopyLink(postUrl(post.id));
 
   const category = CATEGORIES[post.category];
   const needsClamp = post.body.length > CLAMP_LENGTH;
@@ -47,20 +42,8 @@ export default function PostCard({ post, focused = false }) {
   }
 
   function share() {
-    const url = `${BOARD_URL}#post-${post.id}`;
     logEvent('share_click', { category: post.category, postId: post.id });
-    if (!navigator.clipboard) {
-      setShareUrl(url);
-      return;
-    }
-    navigator.clipboard
-      .writeText(url)
-      .then(() => {
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      })
-      // Clipboard access can be denied inside the embed — show the link instead.
-      .catch(() => setShareUrl(url));
+    copy();
   }
 
   function revealContact() {
@@ -122,11 +105,11 @@ export default function PostCard({ post, focused = false }) {
         </div>
       </div>
 
-      {shareUrl && (
+      {fallbackUrl && (
         <input
           className="card-share-url"
           readOnly
-          value={shareUrl}
+          value={fallbackUrl}
           aria-label="Link to this note"
           autoFocus
           onFocus={(e) => e.target.select()}
