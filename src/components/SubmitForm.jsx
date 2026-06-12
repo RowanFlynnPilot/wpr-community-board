@@ -35,6 +35,11 @@ export default function SubmitForm({ onClose }) {
     setError(null);
     setSubmitting(true);
 
+    // Logged at the attempt, not on success — monthly_engagement counts
+    // this as submissions_started, and the participation view counts what
+    // actually arrived. The gap between them is the funnel.
+    logEvent('submission', { category: form.category });
+
     const { error } = await supabase.rpc('submit_post', {
       p_category: form.category,
       p_title: form.title,
@@ -52,6 +57,8 @@ export default function SubmitForm({ onClose }) {
     if (error) {
       if (error.message.includes('RATE_LIMIT')) {
         setError('You’ve reached the limit of 3 notes in 24 hours. Try again tomorrow.');
+      } else if (error.message.includes('EVENT_DATE_RANGE')) {
+        setError('Event dates need to fall within the coming year.');
       } else if (error.message.includes('title')) {
         setError('Titles need to be between 5 and 80 characters.');
       } else if (error.message.includes('body')) {
@@ -64,7 +71,6 @@ export default function SubmitForm({ onClose }) {
       return;
     }
 
-    logEvent('submission', { category: form.category });
     setSent(true);
   }
 

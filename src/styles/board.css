@@ -20,7 +20,9 @@
   --rule: #e2ddd0;
   --wpr-red: #dd3333;
   --wpr-red-dark: #c02525;
-  --wpr-teal: #3a867c;
+  /* Deepened from the sampled #3a867c so small teal text clears WCAG AA
+     (4.95:1 on the card cream). */
+  --wpr-teal: #357a71;
   --font-display: 'Oswald', 'Helvetica Neue', Arial, sans-serif;
   --font-body: 'Merriweather', Georgia, serif;
   --font-type: 'Courier Prime', 'Courier New', monospace;

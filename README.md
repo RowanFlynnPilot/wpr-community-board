@@ -15,9 +15,11 @@ rules before changing anything.
 
 1. **Create the Supabase project** (free tier is fine to start).
 2. **Enable pg_cron:** Dashboard → Database → Extensions → enable `pg_cron`.
-3. **Run the migration:** paste `supabase/migrations/001_init.sql` into the SQL
-   Editor and run it. It creates the schema, security policies, RPC functions,
-   analytics tables, reporting views, and the daily expiry job.
+3. **Run the migrations in order:** paste `supabase/migrations/001_init.sql`
+   into the SQL Editor and run it (schema, security policies, RPC functions,
+   analytics tables, reporting views, the daily expiry job), then run
+   `supabase/migrations/002_hardening.sql` (analytics rate limit, event-date
+   bounds, clearer publish errors).
 4. **Seed (local/dev only):** run `supabase/seed.sql` for ten believable Wausau
    posts plus one pending item so the admin queue isn't empty.
 5. **Create the editor's account:** Dashboard → Authentication → Add user →
@@ -84,8 +86,10 @@ Download CSV. The metric definitions match the proposal document one-to-one.
 
 Type and color come straight from wausaupilotandreview.com and the typewriter
 logo: Oswald headings, Merriweather body, Courier Prime as the typewriter
-voice, site red `#dd3333`, and teal `#3a867c` sampled from the typewriter
-itself. The signature element is the **editor's stamp** on every card —
+voice, site red `#dd3333`, and teal `#357a71` — sampled from the typewriter
+(`#3a867c`), then deepened a step so small teal text clears WCAG AA on the
+card cream. Fonts are self-hosted (Fontsource), so no reader request ever
+leaves the site. The signature element is the **editor's stamp** on every card —
 `APPROVED · JUN 9` — because human review is the differentiator and the design
 should say so. `design/preview.html` is a self-contained comp: open it in any
 browser, no build required. Show it to the editor before anything ships.
