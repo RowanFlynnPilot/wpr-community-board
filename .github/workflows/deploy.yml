@@ -30,6 +30,9 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          # Repo variable (not a secret): the WordPress page the board is
+          # embedded on. Share links point here once it's set.
+          VITE_PUBLIC_URL: ${{ vars.VITE_PUBLIC_URL }}
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:

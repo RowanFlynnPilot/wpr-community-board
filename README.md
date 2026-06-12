@@ -48,6 +48,10 @@ setup: repo → Settings → Pages → Source: GitHub Actions, then add two
 design — row-level security is the boundary, and the migration revokes every
 anonymous path except the published view and the two RPCs.
 
+Once the board is embedded on the site, also set the **Actions variable**
+`VITE_PUBLIC_URL` to the WordPress page URL so Share links send readers
+there instead of the raw GitHub Pages URL.
+
 ## Embed in WordPress
 
 See `embed/wordpress-embed.md` for the iframe snippet with auto-height. It's

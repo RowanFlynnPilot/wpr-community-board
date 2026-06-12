@@ -11,9 +11,14 @@ export default function Board() {
   const [error, setError] = useState(null);
   const [activeCategory, setActiveCategory] = useState('all');
   const [showSubmit, setShowSubmit] = useState(false);
+  const [focusId, setFocusId] = useState(null);
 
   useEffect(() => {
     logEvent('board_view');
+    // A shared deep link ('#post-<id>') names the card to open. Posts load
+    // after first paint, so the browser's native anchor jump never fires —
+    // the board handles it once the card exists.
+    const match = window.location.hash.match(/^#post-([0-9a-f-]+)$/);
     supabase
       .from('board_posts')
       .select('*')
@@ -21,9 +26,20 @@ export default function Board() {
       .order('published_at', { ascending: false })
       .then(({ data, error }) => {
         if (error) setError(error.message);
-        else setPosts(data);
+        else {
+          setPosts(data);
+          if (match && data.some((p) => p.id === match[1])) setFocusId(match[1]);
+        }
       });
   }, []);
+
+  // Instant jump, like a native anchor: smooth scrolling stalls in
+  // background tabs, and the focus ring already shows the reader where
+  // to look.
+  useEffect(() => {
+    if (!focusId) return;
+    document.getElementById(`post-${focusId}`)?.scrollIntoView({ block: 'center' });
+  }, [focusId]);
 
   const visible = useMemo(() => {
     if (!posts) return [];
@@ -116,7 +132,7 @@ export default function Board() {
       ) : (
         <div className="card-grid">
           {visible.map((post) => (
-            <PostCard key={post.id} post={post} />
+            <PostCard key={post.id} post={post} focused={post.id === focusId} />
           ))}
         </div>
       )}

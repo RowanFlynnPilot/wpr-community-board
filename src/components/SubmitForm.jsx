@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { logEvent } from '../lib/analytics';
 import { CATEGORIES, CATEGORY_KEYS } from '../lib/categories';
+import Modal from './Modal';
 
 const BODY_MAX = 600;
 
@@ -29,7 +30,8 @@ export default function SubmitForm({ onClose }) {
     setForm((f) => ({ ...f, [field]: value }));
   }
 
-  async function submit() {
+  async function submit(e) {
+    e.preventDefault();
     setError(null);
     setSubmitting(true);
 
@@ -49,7 +51,7 @@ export default function SubmitForm({ onClose }) {
 
     if (error) {
       if (error.message.includes('RATE_LIMIT')) {
-        setError('You\u2019ve reached the limit of 3 notes in 24 hours. Try again tomorrow.');
+        setError('You’ve reached the limit of 3 notes in 24 hours. Try again tomorrow.');
       } else if (error.message.includes('title')) {
         setError('Titles need to be between 5 and 80 characters.');
       } else if (error.message.includes('body')) {
@@ -68,50 +70,42 @@ export default function SubmitForm({ onClose }) {
 
   if (sent) {
     return (
-      <div className="modal-backdrop" onClick={onClose}>
-        <div className="modal card" onClick={(e) => e.stopPropagation()}>
-          <p className="card-stamp">RECEIVED</p>
-          <h2 className="card-title">Sent to the editor&rsquo;s desk</h2>
-          <p className="card-body">
-            Your note is in the queue. The editor reads every submission before it&rsquo;s
-            pinned — most go up within a day. Thanks for posting, neighbor.
-          </p>
-          <button className="board-cta" onClick={onClose}>
-            Back to the board
-          </button>
-        </div>
-      </div>
+      <Modal label="Note received" onClose={onClose}>
+        <p className="card-stamp">RECEIVED</p>
+        <h2 className="card-title">Sent to the editor&rsquo;s desk</h2>
+        <p className="card-body">
+          Your note is in the queue. The editor reads every submission before it&rsquo;s
+          pinned — most go up within a day. Thanks for posting, neighbor.
+        </p>
+        <button className="board-cta" onClick={onClose}>
+          Back to the board
+        </button>
+      </Modal>
     );
   }
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div
-        className="modal card"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Post a note to the Community Board"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="card-top">
-          <span className="card-chip">New note</span>
-          <button className="link-button" onClick={onClose}>
-            Close
-          </button>
-        </div>
+    <Modal label="Post a note to the Community Board" onClose={onClose}>
+      <div className="card-top">
+        <span className="card-chip">New note</span>
+        <button className="link-button" onClick={onClose}>
+          Close
+        </button>
+      </div>
 
-        <h2 className="card-title">Post a note</h2>
-        <p className="form-rules">
-          Be neighborly. No commercial ads, campaigning, or personal disputes. The editor
-          reviews every note before it&rsquo;s pinned.
+      <h2 className="card-title">Post a note</h2>
+      <p className="form-rules">
+        Be neighborly. No commercial ads, campaigning, or personal disputes. The editor
+        reviews every note before it&rsquo;s pinned.
+      </p>
+
+      {error && (
+        <p className="form-error" role="alert">
+          {error}
         </p>
+      )}
 
-        {error && (
-          <p className="form-error" role="alert">
-            {error}
-          </p>
-        )}
-
+      <form onSubmit={submit}>
         <label className="form-label">
           Category
           <select value={form.category} onChange={(e) => update('category', e.target.value)}>
@@ -139,6 +133,8 @@ export default function SubmitForm({ onClose }) {
           Title
           <input
             type="text"
+            required
+            minLength={5}
             maxLength={80}
             placeholder="Found: gray tabby near Franklin Elementary"
             value={form.title}
@@ -150,6 +146,8 @@ export default function SubmitForm({ onClose }) {
           Your note
           <textarea
             rows={5}
+            required
+            minLength={20}
             maxLength={BODY_MAX}
             placeholder="The details a neighbor would need&hellip;"
             value={form.body}
@@ -174,6 +172,8 @@ export default function SubmitForm({ onClose }) {
             Your name <span className="form-optional">(appears on the note)</span>
             <input
               type="text"
+              required
+              minLength={2}
               maxLength={60}
               value={form.contact_name}
               onChange={(e) => update('contact_name', e.target.value)}
@@ -183,6 +183,7 @@ export default function SubmitForm({ onClose }) {
             Email <span className="form-optional">(never shown unless you say so)</span>
             <input
               type="email"
+              required
               value={form.contact_email}
               onChange={(e) => update('contact_email', e.target.value)}
             />
@@ -210,10 +211,10 @@ export default function SubmitForm({ onClose }) {
           onChange={(e) => update('website', e.target.value)}
         />
 
-        <button className="board-cta" disabled={submitting} onClick={submit}>
-          {submitting ? 'Sending\u2026' : 'Send to the editor'}
+        <button type="submit" className="board-cta" disabled={submitting}>
+          {submitting ? 'Sending…' : 'Send to the editor'}
         </button>
-      </div>
-    </div>
+      </form>
+    </Modal>
   );
 }

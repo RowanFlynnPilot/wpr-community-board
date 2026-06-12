@@ -10,6 +10,7 @@ export default function CategoryFilter({ active, onSelect, posts }) {
     <nav className="filter-row" aria-label="Filter notes by category">
       <button
         className={`filter-pill ${active === 'all' ? 'is-active' : ''}`}
+        aria-pressed={active === 'all'}
         onClick={() => onSelect('all')}
       >
         All notes <span className="pill-count">{posts.length}</span>
@@ -18,6 +19,7 @@ export default function CategoryFilter({ active, onSelect, posts }) {
         <button
           key={key}
           className={`filter-pill ${active === key ? 'is-active' : ''}`}
+          aria-pressed={active === key}
           style={
             active === key
               ? { background: CATEGORIES[key].dot, borderColor: CATEGORIES[key].dot }
