@@ -41,9 +41,13 @@ database.
 2. **Enable pg_cron:** Dashboard → Database → Extensions → enable `pg_cron`.
 3. **Run the migrations in order:** paste `supabase/migrations/001_init.sql`
    into the SQL Editor and run it (schema, security policies, RPC functions,
-   analytics tables, reporting views, the daily expiry job), then run
+   analytics tables, reporting views, the daily expiry job), then
    `supabase/migrations/002_hardening.sql` (analytics rate limit, event-date
-   bounds, clearer publish errors).
+   bounds, clearer publish errors), then
+   `supabase/migrations/003_editor_grants.sql` (desk table grants — newer
+   Supabase projects don't grant table privileges automatically, and an RLS
+   policy alone isn't a grant; without 003 the desk fails with "permission
+   denied for table posts").
 4. **Seed (local/dev only):** run `supabase/seed.sql` for ten believable Wausau
    posts plus one pending item so the admin queue isn't empty.
 5. **Create the editor's account:** Dashboard → Authentication → Add user →

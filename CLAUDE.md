@@ -102,6 +102,7 @@ npm run build      # static build to dist/
 
 - `supabase/migrations/001_init.sql` — schema, security, RPCs, analytics, views, cron
 - `supabase/migrations/002_hardening.sql` — analytics rate limit, event-date bounds, publish errors
+- `supabase/migrations/003_editor_grants.sql` — desk grants (RLS policies aren't grants; Supabase no longer auto-grants)
 - `src/components/Board.jsx` — container: fetch, filter state, pulse, modal
 - `src/components/SubmitForm.jsx` — the one write path from the public
 - `src/admin/AdminPage.jsx` — sign-in + moderation desk
