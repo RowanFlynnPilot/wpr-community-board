@@ -96,7 +96,14 @@ export default function Board() {
     <I18nProvider value={{ lang, t }}>
       <div className="board" lang={lang}>
         <header className="board-header">
-          <img className="board-mark" src="./wpr-typewriter.png" alt="Wausau Pilot & Review" />
+          <img
+            className="board-mark"
+            src="./wpr-typewriter.png"
+            alt="Wausau Pilot & Review"
+            width={76}
+            height={76}
+            decoding="async"
+          />
           <div className="board-titles">
             <p className="board-eyebrow">Wausau Pilot &amp; Review</p>
             <h1 className="board-title">The Community Board</h1>

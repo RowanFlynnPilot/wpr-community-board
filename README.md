@@ -53,12 +53,18 @@ database.
    and anon key from Project Settings → API.
 7. `npm install && npm run dev`
 
+> **Free-tier note:** Supabase pauses free projects after about a week with
+> no API activity. Real readers keep it awake; before launch, opening the
+> board (or the desk) once a week is enough. If it pauses, restore it from
+> the Supabase dashboard — nothing is lost.
+
 ## The editor's workflow (for Mom)
 
 1. Bookmark the board URL with `#/admin` on the end — that's the desk.
 2. Sign in. The **Pending** tab shows everything waiting, newest first, with
    the submitter's email (readers never see it unless the submitter opted in).
-3. **Edit** fixes typos before a note goes up — copy-edit like any newspaper.
+3. **Edit** fixes typos (and, for events, a mistyped date) before a note goes
+   up — copy-edit like any newspaper.
 4. **Approve & pin to board** publishes it. Events stay up through the day
    after the event; everything else stays up 21 days, then expires on its own
    at 4:17 a.m. No stale garage sales, ever.
@@ -66,7 +72,8 @@ database.
    **Rejected** tab keeps the archive.
 6. On the **Published** tab: **Pin to top** marks a note as an Editor's pick
    (red pin, sorts first), **Copy link** grabs the note's share URL for the
-   newsletter, **Take down** removes it immediately. **Copy newsletter
+   newsletter, **Take down** removes it (with a confirm step — there's no
+   undo from the desk). **Copy newsletter
    snippet** builds the whole weekly "This week on the Community Board"
    block — pinned picks first, deep links included — ready to paste into a
    Newspack Custom HTML block.

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { CATEGORIES, categoryLabel } from '../lib/categories';
+import { newsletterHtml } from '../lib/newsletter';
 import { BOARD_URL, postUrl, useCopyLink } from '../lib/share';
 
 export default function AdminPage() {
@@ -81,6 +82,16 @@ function Desk() {
     load();
   }, []);
 
+  // The bookmark tab shows the queue at a glance: "(3) The Editor's Desk".
+  useEffect(() => {
+    const pending = posts?.filter((p) => p.status === 'pending').length ?? 0;
+    const base = 'The Editor’s Desk — Wausau Pilot & Review';
+    document.title = pending > 0 ? `(${pending}) ${base}` : base;
+    return () => {
+      document.title = 'The Community Board — Wausau Pilot & Review';
+    };
+  }, [posts]);
+
   const byStatus = (status) => posts?.filter((p) => p.status === status) ?? [];
   const list = byStatus(tab);
 
@@ -96,13 +107,16 @@ function Desk() {
     else load();
   }
 
-  // Copy-editing before approval: title and body carry no derived state,
-  // so this is a permitted direct update — and only while pending.
-  async function saveEdit(id, draft) {
+  // Copy-editing before approval: title, body, and (for events) the event
+  // date carry no derived state while pending — expiry isn't computed until
+  // publish_post() runs, after any edit.
+  async function saveEdit(post, draft) {
+    const fields = { title: draft.title.trim(), body: draft.body.trim() };
+    if (post.category === 'events') fields.event_date = draft.event_date;
     const { error } = await supabase
       .from('posts')
-      .update({ title: draft.title.trim(), body: draft.body.trim() })
-      .eq('id', id)
+      .update(fields)
+      .eq('id', post.id)
       .eq('status', 'pending');
     if (error) setError(error.message);
     else load();
@@ -129,7 +143,14 @@ function Desk() {
   return (
     <div className="board admin">
       <header className="board-header">
-        <img className="board-mark" src="./wpr-typewriter.png" alt="Wausau Pilot & Review" />
+        <img
+          className="board-mark"
+          src="./wpr-typewriter.png"
+          alt="Wausau Pilot & Review"
+          width={76}
+          height={76}
+          decoding="async"
+        />
         <div className="board-titles">
           <p className="board-eyebrow">Wausau Pilot &amp; Review</p>
           <h1 className="board-title">The Editor&rsquo;s Desk</h1>
@@ -193,9 +214,15 @@ function AdminCard({ post, onApprove, onReject, onSaveEdit, onTogglePin, onTakeD
   const [rejecting, setRejecting] = useState(false);
   const [reason, setReason] = useState('');
   const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState({ title: post.title, body: post.body });
+  const [removing, setRemoving] = useState(false);
+  const [draft, setDraft] = useState({
+    title: post.title,
+    body: post.body,
+    event_date: post.event_date ?? '',
+  });
   const { copied, fallbackUrl, copy } = useCopyLink(postUrl(post.id));
   const category = CATEGORIES[post.category];
+  const isEvent = post.category === 'events';
 
   return (
     <article className="card admin-card">
@@ -225,6 +252,16 @@ function AdminCard({ post, onApprove, onReject, onSaveEdit, onTogglePin, onTakeD
               onChange={(e) => setDraft((d) => ({ ...d, title: e.target.value }))}
             />
           </label>
+          {isEvent && (
+            <label className="form-label">
+              Event date
+              <input
+                type="date"
+                value={draft.event_date}
+                onChange={(e) => setDraft((d) => ({ ...d, event_date: e.target.value }))}
+              />
+            </label>
+          )}
           <label className="form-label">
             Note
             <textarea
@@ -258,9 +295,9 @@ function AdminCard({ post, onApprove, onReject, onSaveEdit, onTogglePin, onTakeD
           <div className="admin-actions">
             <button
               className="board-cta"
-              disabled={!draft.title.trim() || !draft.body.trim()}
+              disabled={!draft.title.trim() || !draft.body.trim() || (isEvent && !draft.event_date)}
               onClick={() => {
-                onSaveEdit(post.id, draft);
+                onSaveEdit(post, draft);
                 setEditing(false);
               }}
             >
@@ -269,7 +306,7 @@ function AdminCard({ post, onApprove, onReject, onSaveEdit, onTogglePin, onTakeD
             <button
               className="link-button"
               onClick={() => {
-                setDraft({ title: post.title, body: post.body });
+                setDraft({ title: post.title, body: post.body, event_date: post.event_date ?? '' });
                 setEditing(false);
               }}
             >
@@ -312,15 +349,28 @@ function AdminCard({ post, onApprove, onReject, onSaveEdit, onTogglePin, onTakeD
       {post.status === 'published' && (
         <>
           <div className="admin-actions">
-            <button className="link-button" onClick={() => onTogglePin(post)}>
-              {post.is_pinned ? 'Unpin from top' : 'Pin to top'}
-            </button>
-            <button className="link-button" onClick={copy}>
-              {copied ? 'Link copied' : 'Copy link'}
-            </button>
-            <button className="link-button danger" onClick={() => onTakeDown(post.id)}>
-              Take down
-            </button>
+            {removing ? (
+              <>
+                <button className="link-button danger" onClick={() => onTakeDown(post.id)}>
+                  Confirm take-down
+                </button>
+                <button className="link-button" onClick={() => setRemoving(false)}>
+                  Cancel
+                </button>
+              </>
+            ) : (
+              <>
+                <button className="link-button" onClick={() => onTogglePin(post)}>
+                  {post.is_pinned ? 'Unpin from top' : 'Pin to top'}
+                </button>
+                <button className="link-button" onClick={copy}>
+                  {copied ? 'Link copied' : 'Copy link'}
+                </button>
+                <button className="link-button danger" onClick={() => setRemoving(true)}>
+                  Take down
+                </button>
+              </>
+            )}
           </div>
           {fallbackUrl && (
             <input
@@ -341,39 +391,12 @@ function AdminCard({ post, onApprove, onReject, onSaveEdit, onTogglePin, onTakeD
 // The newsletter loop, operationalized: one click copies a ready-to-paste
 // HTML block — pinned picks first, then the newest — for the weekly
 // newsletter's Custom HTML block. Deep links open the exact card.
-function escapeHtml(text) {
-  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
-
-function newsletterHtml(posts) {
-  const picks = [...posts]
-    .sort(
-      (a, b) =>
-        (b.is_pinned ? 1 : 0) - (a.is_pinned ? 1 : 0) ||
-        new Date(b.published_at) - new Date(a.published_at)
-    )
-    .slice(0, 5);
-  const items = picks
-    .map((p) => {
-      const teaser = p.body.length > 90 ? `${p.body.slice(0, 90).trimEnd()}…` : p.body;
-      return `  <li><a href="${postUrl(p.id)}">${escapeHtml(p.title)}</a> — ${escapeHtml(teaser)}</li>`;
-    })
-    .join('\n');
-  return [
-    '<h3>This week on the Community Board</h3>',
-    '<ul>',
-    items,
-    '</ul>',
-    `<p><a href="${BOARD_URL}">See all the notes →</a></p>`,
-  ].join('\n');
-}
-
 function NewsletterSnippet({ posts }) {
   const [copied, setCopied] = useState(false);
   const [fallback, setFallback] = useState(null);
 
   function copySnippet() {
-    const html = newsletterHtml(posts);
+    const html = newsletterHtml(posts, BOARD_URL);
     if (!navigator.clipboard) {
       setFallback(html);
       return;

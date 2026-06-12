@@ -64,8 +64,9 @@ pg_cron (daily)─update─> posts                     ── published -> expir
   Never set them from the frontend or in an UPDATE.
 - Direct table updates from the admin are allowed only for state with no
   derived logic: `is_pinned` toggle, take-down (`status = 'expired'`), and
-  copy-editing a *pending* note's `title`/`body` before approval. The
-  Postgres CHECK constraints still validate edited text.
+  copy-editing a *pending* note's `title`/`body`/`event_date` before
+  approval (expiry is computed from `event_date` only at publish, after any
+  edit). The Postgres CHECK constraints still validate edited text.
 - Category definitions live in two places by necessity: the Postgres enum
   (source of truth) and `src/lib/categories.js` (display, with labels in all
   three board languages). Adding a category means a migration first, then the
