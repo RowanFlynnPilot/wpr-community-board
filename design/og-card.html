@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!-- The social card comp: rendered to public/og-card.png at exactly
+     1200x630 with headless Edge. Regenerate after design changes:
+     msedge --headless=new --window-size=1200,630 --virtual-time-budget=15000
+       --screenshot="public/og-card.png" "design/og-card.html" -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=Merriweather:ital,wght@1,400&family=Courier+Prime:wght@700&display=block" rel="stylesheet">
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { width: 1200px; height: 630px; overflow: hidden; }
+  body {
+    background-color: #f5f3ec;
+    background-image: radial-gradient(rgba(17, 17, 17, 0.045) 1px, transparent 1.2px);
+    background-size: 16px 16px;
+    font-family: 'Merriweather', Georgia, serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .card {
+    position: relative;
+    width: 940px;
+    background: #fffdf8;
+    border: 2px solid rgba(17, 17, 17, 0.12);
+    border-radius: 4px;
+    padding: 64px 72px 52px;
+    box-shadow: 0 3px 6px rgba(60, 50, 20, 0.08), 0 22px 54px rgba(60, 50, 20, 0.16);
+    transform: rotate(-0.8deg);
+    text-align: center;
+  }
+  .pin {
+    position: absolute;
+    top: -17px;
+    left: 50%;
+    width: 34px;
+    height: 34px;
+    margin-left: -17px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 34% 30%, #f6e7c1 0%, #d9b969 38%, #a8842f 72%, #6f5418 100%);
+    box-shadow:
+      inset 0 -4px 7px rgba(60, 42, 5, 0.45),
+      inset 0 4px 5px rgba(255, 252, 240, 0.7),
+      0 4px 5px rgba(17, 17, 17, 0.3),
+      0 13px 18px -7px rgba(17, 17, 17, 0.35);
+  }
+  .eyebrow {
+    font-family: 'Courier Prime', monospace;
+    font-weight: 700;
+    font-size: 26px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #111;
+  }
+  h1 {
+    margin: 14px 0 20px;
+    font-family: 'Oswald', sans-serif;
+    font-weight: 600;
+    font-size: 96px;
+    line-height: 1.02;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    color: #111;
+    padding-bottom: 26px;
+    border-bottom: 4px solid #dd3333;
+  }
+  .tagline {
+    font-style: italic;
+    font-size: 30px;
+    line-height: 1.5;
+    color: #4a4a4a;
+  }
+  .rule {
+    height: 5px;
+    border-top: 4px solid #111;
+    border-bottom: 1px solid #111;
+    margin: 34px auto 0;
+    width: 360px;
+  }
+  .stamp {
+    position: absolute;
+    right: 46px;
+    bottom: 42px;
+    font-family: 'Courier Prime', monospace;
+    font-weight: 700;
+    font-size: 25px;
+    letter-spacing: 0.12em;
+    color: #357a71;
+    border: 4px solid #357a71;
+    border-radius: 6px;
+    padding: 12px 20px;
+    box-shadow: inset 0 0 0 4px #fffdf8, inset 0 0 0 7px #357a71;
+    transform: rotate(-6deg);
+    opacity: 0.9;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <span class="pin"></span>
+    <p class="eyebrow">Wausau Pilot &amp; Review</p>
+    <h1>The Community Board</h1>
+    <p class="tagline">Notes from your neighbors. Every one is read<br>by an editor before it&rsquo;s pinned.</p>
+    <div class="rule"></div>
+    <span class="stamp">APPROVED</span>
+  </div>
+</body>
+</html>
