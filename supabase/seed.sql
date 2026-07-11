@@ -1,6 +1,20 @@
--- Development seed. Runs as postgres (bypasses RLS) — never run in production.
--- Inserts directly because seeding is the one context where derived state
--- (published_at, expires_at) is set by hand.
+-- Demo seed. Ten believable Wausau notes plus one pending item so the desk
+-- queue isn't empty. Dates are relative, so re-run it any time the demo
+-- board needs refreshing — it first clears its own earlier rows (everything
+-- @example.org), so re-runs never stack duplicates. Runs as postgres in the
+-- SQL Editor (bypasses RLS); inserts directly because seeding is the one
+-- context where derived state (published_at, expires_at) is set by hand.
+--
+-- Every seed row uses an @example.org email, so clearing the demo before
+-- real launch is one line:
+--
+--   delete from posts where contact_email like '%@example.org';
+--
+-- While seeded, monthly_participation counts these rows as submissions —
+-- expected during the demo period; the line above removes them from the
+-- numbers too.
+
+delete from posts where contact_email like '%@example.org';
 
 insert into posts
   (category, title, body, neighborhood, event_date, contact_name, contact_email,
@@ -9,9 +23,9 @@ values
   ('events',
    'Concerts on the Square kicks off Wednesday',
    'First show of the summer on the 400 Block, 6–8 p.m. Bring a lawn chair — food trucks line Third Street from 5. Free, all ages, rain location is the Grand Theater lobby.',
-   'Downtown Wausau', current_date + 6,
+   'Downtown Wausau', current_date + 12,
    'Wausau Events', 'hello@example.org',
-   false, 'published', true, now() - interval '2 days', (current_date + 7)::timestamptz),
+   false, 'published', true, now() - interval '2 days', (current_date + 14)::timestamptz),
 
   ('volunteer',
    'Hmong Wausau Festival needs setup volunteers',
@@ -51,9 +65,9 @@ values
   ('events',
    'Kronenwetter Farmers Market opens Sunday',
    'The market opens for its 15th season Sunday, 9 a.m. to 1 p.m. at the Municipal Center. Two dozen vendors to start — produce, eggs, honey, bakery. EBT and senior vouchers accepted at the info tent.',
-   'Kronenwetter', current_date + 3,
+   'Kronenwetter', current_date + 16,
    'Market Manager', 'market@example.org',
-   true, 'published', false, now() - interval '1 day', (current_date + 4)::timestamptz),
+   true, 'published', false, now() - interval '1 day', (current_date + 18)::timestamptz),
 
   ('free_forsale',
    'Moving sale Saturday on Andrew Avenue',

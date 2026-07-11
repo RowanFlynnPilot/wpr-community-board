@@ -50,8 +50,12 @@ database.
    denied for table posts"), then
    `supabase/migrations/004_dictation_and_language.sql` (desk dictation via
    the same submit path, plus language-of-session grant metrics).
-4. **Seed (local/dev only):** run `supabase/seed.sql` for ten believable Wausau
-   posts plus one pending item so the admin queue isn't empty.
+4. **Seed (dev or demo):** run `supabase/seed.sql` for ten believable Wausau
+   posts plus one pending item so the admin queue isn't empty. Dates are
+   relative and the script clears its own earlier rows first, so re-run it
+   whenever the demo board needs refreshing. Every seed row uses an
+   `@example.org` email, so clearing the demo before real launch is one
+   line: `delete from posts where contact_email like '%@example.org';`
 5. **Create the editor's account:** Dashboard → Authentication → Add user →
    email + password. Turn **off** public sign-ups (Authentication → Providers →
    Email → disable "Allow new users to sign up"). One editor, one account.
