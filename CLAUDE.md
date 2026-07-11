@@ -48,7 +48,7 @@ database* (daily post expiry).
 
 ```
 Reader browser ──read──> board_posts (view)        ── published rows, public columns only
-Reader browser ──rpc───> submit_post()             ── the ONLY insert path (honeypot + rate limit)
+Reader browser ──rpc───> submit_post()             ── the ONLY insert path (honeypot + rate limit; desk dictation exempt from the limit)
 Editor browser ──rpc───> publish_post()/reject_post() ── the ONLY publish path (computes expires_at)
 Editor browser ──table─> posts                     ── pin toggle / take-down / pending copy-edit (no derived state)
 All browsers   ──rpc───> log_event()               ── first-party analytics, no PII
@@ -103,6 +103,7 @@ npm run build      # static build to dist/
 - `supabase/migrations/001_init.sql` — schema, security, RPCs, analytics, views, cron
 - `supabase/migrations/002_hardening.sql` — analytics rate limit, event-date bounds, publish errors
 - `supabase/migrations/003_editor_grants.sql` — desk grants (RLS policies aren't grants; Supabase no longer auto-grants)
+- `supabase/migrations/004_dictation_and_language.sql` — desk dictation via submit_post, language on events + grant columns
 - `src/components/Board.jsx` — container: fetch, filter state, pulse, modal
 - `src/components/SubmitForm.jsx` — the one write path from the public
 - `src/admin/AdminPage.jsx` — sign-in + moderation desk

@@ -30,7 +30,7 @@ function visitorId() {
 
 // Fire-and-forget: analytics never block the interface. Failures are
 // logged to the console so they're visible, not swallowed.
-export function logEvent(eventType, { category = null, postId = null } = {}) {
+export function logEvent(eventType, { category = null, postId = null, lang = null } = {}) {
   try {
     supabase
       .rpc('log_event', {
@@ -38,6 +38,7 @@ export function logEvent(eventType, { category = null, postId = null } = {}) {
         p_session_id: visitorId(),
         p_category: category,
         p_post_id: postId,
+        p_lang: lang,
       })
       .then(({ error }) => {
         if (error) console.error(`log_event(${eventType}) failed:`, error.message);

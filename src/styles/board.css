@@ -750,6 +750,13 @@ body {
   color: var(--wpr-red);
 }
 
+.admin-ran {
+  margin: 10px 0 0;
+  font-family: var(--font-type);
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
 .newsletter-snippet {
   margin-bottom: 16px;
 }
@@ -806,6 +813,19 @@ body {
 .report-table td:first-child {
   text-align: left;
   font-weight: 700;
+}
+
+.report-downloads {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+}
+
+.report-note {
+  margin: 10px 0 0;
+  font-family: var(--font-type);
+  font-size: 12px;
+  color: var(--ink-soft);
 }
 
 /* ---------- Responsive & motion ---------- */

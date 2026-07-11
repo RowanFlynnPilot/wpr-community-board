@@ -47,7 +47,9 @@ database.
    `supabase/migrations/003_editor_grants.sql` (desk table grants — newer
    Supabase projects don't grant table privileges automatically, and an RLS
    policy alone isn't a grant; without 003 the desk fails with "permission
-   denied for table posts").
+   denied for table posts"), then
+   `supabase/migrations/004_dictation_and_language.sql` (desk dictation via
+   the same submit path, plus language-of-session grant metrics).
 4. **Seed (local/dev only):** run `supabase/seed.sql` for ten believable Wausau
    posts plus one pending item so the admin queue isn't empty.
 5. **Create the editor's account:** Dashboard → Authentication → Add user →
@@ -67,13 +69,18 @@ database.
 1. Bookmark the board URL with `#/admin` on the end — that's the desk.
 2. Sign in. The **Pending** tab shows everything waiting, newest first, with
    the submitter's email (readers never see it unless the submitter opted in).
+   **Write a note** takes dictation: a note phoned in or emailed to the
+   newsroom gets typed up under the neighbor's name and lands in Pending
+   through the same submission path as everything else (the desk is exempt
+   from the 3-per-day limit).
 3. **Edit** fixes typos (and, for events, a mistyped date) before a note goes
    up — copy-edit like any newspaper.
 4. **Approve & pin to board** publishes it. Events stay up through the day
    after the event; everything else stays up 21 days, then expires on its own
    at 4:17 a.m. No stale garage sales, ever.
 5. **Reject** asks for a reason — it's kept on file, not sent to anyone. The
-   **Rejected** tab keeps the archive.
+   **Rejected** tab keeps that archive; the **Expired** tab keeps everything
+   that has run its course — the source material for a monthly print roundup.
 6. On the **Published** tab: **Pin to top** marks a note as an Editor's pick
    (red pin, sorts first), **Copy link** grabs the note's share URL for the
    newsletter, **Take down** removes it (with a confirm step — there's no
@@ -82,7 +89,10 @@ database.
    block — pinned picks first, deep links included — ready to paste into a
    Newspack Custom HTML block.
 7. The **Report** tab is the grant table — one row per month, every metric in
-   the proposal, with a CSV download for the funder report.
+   the proposal (including Español/Hmoob sessions, so the translation work is
+   a measured outcome), with a CSV download for the funder report — plus a
+   full-archive download: free-tier Supabase keeps no automated backups, so
+   grab one after each busy month.
 8. **Print roundup:** open the public board and hit Print. The print
    stylesheet lifts the text clamp (full notes), drops pins, shadows, and
    buttons, and lays the cards out two-up — clean enough for the print

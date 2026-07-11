@@ -25,7 +25,8 @@ export default function Board() {
   const t = STRINGS[lang];
 
   useEffect(() => {
-    logEvent('board_view');
+    // The arrival language is the session-language metric in grant_report.
+    logEvent('board_view', { lang: readLang() });
     // A shared deep link ('#post-<id>') names the card to open. Posts load
     // after first paint, so the browser's native anchor jump never fires —
     // the board handles it once the card exists.

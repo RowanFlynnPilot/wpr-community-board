@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { CATEGORIES, categoryLabel } from '../lib/categories';
+import { CATEGORIES, CATEGORY_KEYS, categoryLabel } from '../lib/categories';
+import { toCsv, downloadCsv } from '../lib/csv';
+import { formatStamp } from '../lib/dates';
 import { newsletterHtml } from '../lib/newsletter';
 import { BOARD_URL, postUrl, useCopyLink } from '../lib/share';
+import Modal from '../components/Modal';
 
 export default function AdminPage() {
   const [session, setSession] = useState(null);
@@ -58,19 +61,28 @@ const TABS = [
   { key: 'pending', label: 'Pending' },
   { key: 'published', label: 'Published' },
   { key: 'rejected', label: 'Rejected' },
+  { key: 'expired', label: 'Expired' },
   { key: 'report', label: 'Report' },
 ];
+
+const EMPTY_COPY = {
+  pending: 'The queue is clear. Nothing waiting.',
+  published: 'Nothing is currently published.',
+  rejected: 'Nothing has been rejected.',
+  expired: 'Nothing has expired yet.',
+};
 
 function Desk() {
   const [tab, setTab] = useState('pending');
   const [posts, setPosts] = useState(null);
   const [error, setError] = useState(null);
+  const [composing, setComposing] = useState(false);
 
   function load() {
     supabase
       .from('posts')
       .select('*')
-      .in('status', ['pending', 'published', 'rejected'])
+      .in('status', ['pending', 'published', 'rejected', 'expired'])
       .order('created_at', { ascending: false })
       .then(({ data, error }) => {
         if (error) setError(error.message);
@@ -156,6 +168,9 @@ function Desk() {
           <h1 className="board-title">The Editor&rsquo;s Desk</h1>
           <p className="board-tagline">Approve, edit, reject, pin. The Report tab is the grant table.</p>
         </div>
+        <button className="board-cta" onClick={() => setComposing(true)}>
+          Write a note
+        </button>
         <button className="link-button" onClick={() => supabase.auth.signOut()}>
           Sign out
         </button>
@@ -182,15 +197,11 @@ function Desk() {
       )}
 
       {tab === 'report' ? (
-        <ReportTab />
+        <ReportTab posts={posts} />
       ) : posts === null ? (
         <p className="board-loading">Loading the queue&hellip;</p>
       ) : list.length === 0 ? (
-        <p className="board-empty">
-          {tab === 'pending' && 'The queue is clear. Nothing waiting.'}
-          {tab === 'published' && 'Nothing is currently published.'}
-          {tab === 'rejected' && 'Nothing has been rejected.'}
-        </p>
+        <p className="board-empty">{EMPTY_COPY[tab]}</p>
       ) : (
         <div className="admin-list">
           {list.map((post) => (
@@ -206,7 +217,196 @@ function Desk() {
           ))}
         </div>
       )}
+
+      {composing && (
+        <ComposeModal
+          onClose={() => setComposing(false)}
+          onSubmitted={() => {
+            setComposing(false);
+            setTab('pending');
+            load();
+          }}
+        />
+      )}
     </div>
+  );
+}
+
+// Dictation: notes that arrive by phone call or email get typed up here and
+// enter through the same submit_post() path as everything else — under the
+// neighbor's own name and email, landing in Pending for a normal approval.
+// No analytics events fire: the funnel counts readers, not the desk.
+const COMPOSE_EMPTY = {
+  category: 'events',
+  title: '',
+  body: '',
+  neighborhood: '',
+  event_date: '',
+  contact_name: '',
+  contact_email: '',
+  show_contact: false,
+};
+
+function ComposeModal({ onClose, onSubmitted }) {
+  const [form, setForm] = useState(COMPOSE_EMPTY);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState(null);
+  const isEvent = form.category === 'events';
+
+  function update(field, value) {
+    setForm((f) => ({ ...f, [field]: value }));
+  }
+
+  async function submit(e) {
+    e.preventDefault();
+    setError(null);
+    setSubmitting(true);
+
+    const { error } = await supabase.rpc('submit_post', {
+      p_category: form.category,
+      p_title: form.title,
+      p_body: form.body,
+      p_neighborhood: form.neighborhood,
+      p_event_date: isEvent ? form.event_date : null,
+      p_contact_name: form.contact_name,
+      p_contact_email: form.contact_email,
+      p_show_contact: form.show_contact,
+      p_website: '',
+    });
+
+    setSubmitting(false);
+
+    if (error) {
+      if (error.message.includes('RATE_LIMIT') || error.message.includes('permission denied')) {
+        setError(`${error.message} — has migration 004 been run? It lets the desk submit.`);
+      } else if (error.message.includes('EVENT_DATE_RANGE')) {
+        setError('Event dates need to fall within the coming year.');
+      } else {
+        setError(error.message);
+      }
+      return;
+    }
+
+    onSubmitted();
+  }
+
+  return (
+    <Modal label="Write a note for a neighbor" onClose={onClose}>
+      <div className="card-top">
+        <span className="card-chip">Dictation</span>
+        <button className="link-button" onClick={onClose}>
+          Close
+        </button>
+      </div>
+
+      <h2 className="card-title">Write a note</h2>
+      <p className="form-rules">
+        Taking a note over the phone or from an email? Type it up here. It lands in
+        Pending under the neighbor&rsquo;s name — approve it like any other note.
+      </p>
+
+      {error && (
+        <p className="form-error" role="alert">
+          {error}
+        </p>
+      )}
+
+      <form onSubmit={submit}>
+        <label className="form-label">
+          Category
+          <select value={form.category} onChange={(e) => update('category', e.target.value)}>
+            {CATEGORY_KEYS.map((key) => (
+              <option key={key} value={key}>
+                {categoryLabel(key)}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        {isEvent && (
+          <label className="form-label">
+            Event date
+            <input
+              type="date"
+              required
+              value={form.event_date}
+              onChange={(e) => update('event_date', e.target.value)}
+            />
+          </label>
+        )}
+
+        <label className="form-label">
+          Title
+          <input
+            type="text"
+            required
+            minLength={5}
+            maxLength={80}
+            value={form.title}
+            onChange={(e) => update('title', e.target.value)}
+          />
+        </label>
+
+        <label className="form-label">
+          The note
+          <textarea
+            rows={5}
+            required
+            minLength={20}
+            maxLength={600}
+            value={form.body}
+            onChange={(e) => update('body', e.target.value)}
+          />
+          <span className="form-count">{600 - form.body.length} characters left</span>
+        </label>
+
+        <label className="form-label">
+          Neighborhood or area <span className="form-optional">(optional)</span>
+          <input
+            type="text"
+            maxLength={60}
+            value={form.neighborhood}
+            onChange={(e) => update('neighborhood', e.target.value)}
+          />
+        </label>
+
+        <div className="form-pair">
+          <label className="form-label">
+            Neighbor&rsquo;s name <span className="form-optional">(appears on the note)</span>
+            <input
+              type="text"
+              required
+              minLength={2}
+              maxLength={60}
+              value={form.contact_name}
+              onChange={(e) => update('contact_name', e.target.value)}
+            />
+          </label>
+          <label className="form-label">
+            Neighbor&rsquo;s email <span className="form-optional">(kept on file, not shown)</span>
+            <input
+              type="email"
+              required
+              value={form.contact_email}
+              onChange={(e) => update('contact_email', e.target.value)}
+            />
+          </label>
+        </div>
+
+        <label className="form-check">
+          <input
+            type="checkbox"
+            checked={form.show_contact}
+            onChange={(e) => update('show_contact', e.target.checked)}
+          />
+          They said readers may contact them at this email
+        </label>
+
+        <button type="submit" className="board-cta" disabled={submitting}>
+          {submitting ? 'Adding…' : 'Add to Pending'}
+        </button>
+      </form>
+    </Modal>
   );
 }
 
@@ -288,6 +488,10 @@ function AdminCard({ post, onApprove, onReject, onSaveEdit, onTogglePin, onTakeD
 
       {post.status === 'rejected' && (
         <p className="admin-reject-reason">Rejected: {post.reject_reason}</p>
+      )}
+
+      {post.status === 'expired' && post.published_at && (
+        <p className="admin-ran">Posted {formatStamp(post.published_at)}</p>
       )}
 
       {post.status === 'pending' &&
@@ -443,6 +647,8 @@ const REPORT_COLUMNS = [
   ['unique_contributors', 'Contributors'],
   ['first_time_contributors', 'First-time'],
   ['avg_hours_to_publish', 'Avg hrs to publish'],
+  ['spanish_sessions', 'Español sessions'],
+  ['hmong_sessions', 'Hmoob sessions'],
 ];
 
 function formatMonth(iso) {
@@ -450,21 +656,7 @@ function formatMonth(iso) {
   return new Date(y, m - 1, 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
 }
 
-function downloadCsv(rows) {
-  const keys = REPORT_COLUMNS.map(([key]) => key);
-  const csv = [
-    keys.join(','),
-    ...rows.map((row) => keys.map((key) => row[key] ?? '').join(',')),
-  ].join('\n');
-  const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'grant_report.csv';
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-function ReportTab() {
+function ReportTab({ posts }) {
   const [rows, setRows] = useState(null);
   const [error, setError] = useState(null);
 
@@ -484,35 +676,61 @@ function ReportTab() {
   if (rows === null) {
     return <p className="board-loading">Adding up the month&hellip;</p>;
   }
-  if (rows.length === 0) {
-    return <p className="board-empty">No activity recorded yet.</p>;
-  }
 
   return (
     <div className="report">
-      <div className="report-scroll">
-        <table className="report-table">
-          <thead>
-            <tr>
-              {REPORT_COLUMNS.map(([key, label]) => (
-                <th key={key}>{label}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.month}>
-                {REPORT_COLUMNS.map(([key]) => (
-                  <td key={key}>{key === 'month' ? formatMonth(row.month) : row[key] ?? '—'}</td>
+      {rows.length === 0 ? (
+        <p className="board-empty">No activity recorded yet.</p>
+      ) : (
+        <div className="report-scroll">
+          <table className="report-table">
+            <thead>
+              <tr>
+                {REPORT_COLUMNS.map(([key, label]) => (
+                  <th key={key}>{label}</th>
                 ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {rows.map((row) => (
+                <tr key={row.month}>
+                  {REPORT_COLUMNS.map(([key]) => (
+                    <td key={key}>{key === 'month' ? formatMonth(row.month) : row[key] ?? '—'}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <div className="report-downloads">
+        {rows.length > 0 && (
+          <button
+            className="link-button"
+            onClick={() =>
+              downloadCsv('grant_report.csv', toCsv(rows, REPORT_COLUMNS.map(([key]) => key)))
+            }
+          >
+            Download CSV for the funder report
+          </button>
+        )}
+        <button
+          className="link-button"
+          disabled={!posts?.length}
+          onClick={() =>
+            downloadCsv(
+              `board-archive-${new Date().toISOString().slice(0, 10)}.csv`,
+              toCsv(posts)
+            )
+          }
+        >
+          Download full archive (every note, for safekeeping)
+        </button>
       </div>
-      <button className="link-button" onClick={() => downloadCsv(rows)}>
-        Download CSV for the funder report
-      </button>
+      <p className="report-note">
+        The archive is the whole posts table. Free-tier Supabase keeps no automated
+        backups — download one after each busy month and keep it with the grant files.
+      </p>
     </div>
   );
 }
