@@ -11,6 +11,11 @@ describe('formatEventDate', () => {
   it('handles the first of the month', () => {
     expect(formatEventDate('2026-07-01')).toBe('Wed, Jul 1');
   });
+
+  it('follows the board language locale', () => {
+    expect(formatEventDate('2026-06-18', 'es-US')).toMatch(/jue/i);
+    expect(formatEventDate('2026-06-18', 'es-US')).toMatch(/jun/i);
+  });
 });
 
 describe('formatStamp', () => {

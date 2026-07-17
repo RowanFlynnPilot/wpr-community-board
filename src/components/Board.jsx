@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { logEvent } from '../lib/analytics';
 import { categoryLabel } from '../lib/categories';
-import { I18nProvider, LANGS, STRINGS, readLang, storeLang } from '../lib/i18n';
+import { DATE_LOCALES, I18nProvider, LANGS, STRINGS, readLang, storeLang } from '../lib/i18n';
 import CategoryFilter from './CategoryFilter';
 import PostCard from './PostCard';
 import SubmitForm from './SubmitForm';
@@ -10,9 +10,6 @@ import SubmitForm from './SubmitForm';
 // Captured once: "this week" is relative to when the reader arrived,
 // which keeps render pure.
 const PAGE_LOADED_AT = Date.now();
-
-// The folio date follows the board language where the browser can.
-const DATE_LOCALES = { en: 'en-US', es: 'es-US', hmn: 'en-US' };
 
 export default function Board() {
   const [posts, setPosts] = useState(null);
@@ -85,10 +82,12 @@ export default function Board() {
 
   if (error) {
     return (
-      <div className="board">
-        <div className="board-error" role="alert">
-          <strong>The board couldn&rsquo;t load.</strong> {error}
-        </div>
+      <div className="board" lang={lang}>
+        <main>
+          <div className="board-error" role="alert">
+            <strong>{t.loadError}</strong> {error}
+          </div>
+        </main>
       </div>
     );
   }
@@ -115,6 +114,7 @@ export default function Board() {
           </button>
         </header>
 
+        <main>
         <p className="board-pulse">
           <span>
             {pulse ? (
@@ -161,6 +161,7 @@ export default function Board() {
             ))}
           </div>
         )}
+        </main>
 
         <footer className="board-footer">
           <p>

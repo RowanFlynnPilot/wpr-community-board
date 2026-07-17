@@ -15,6 +15,10 @@ export const LANGS = [
   ['hmn', 'Hmoob'],
 ];
 
+// Browser date locales per board language. Hmong has no reliable ICU
+// locale, so its dates render in the English pattern.
+export const DATE_LOCALES = { en: 'en-US', es: 'es-US', hmn: 'en-US' };
+
 export const STRINGS = {
   en: {
     tagline: 'Notes from your neighbors. Every one is read by an editor before it’s pinned.',
@@ -27,6 +31,7 @@ export const STRINGS = {
     allNotes: 'All notes',
     filterAria: 'Filter notes by category',
     loading: 'Pinning up the latest notes…',
+    loadError: 'The board couldn’t load.',
     emptyUnder: (label) => `Nothing pinned under ${label} right now.`,
     beFirst: 'Be the first to post one',
     readWhole: 'Read the whole note',
@@ -85,6 +90,7 @@ export const STRINGS = {
     allNotes: 'Todas las notas',
     filterAria: 'Filtrar notas por categoría',
     loading: 'Colgando las últimas notas…',
+    loadError: 'El tablón no pudo cargarse.',
     emptyUnder: (label) => `No hay nada publicado en ${label} por ahora.`,
     beFirst: 'Sé el primero en publicar una',
     readWhole: 'Leer la nota completa',
@@ -142,6 +148,7 @@ export const STRINGS = {
     allNotes: 'Tag nrho cov ntawv',
     filterAria: 'Xaiv hom ntawv',
     loading: 'Tab tom muab cov ntawv tshiab lo…',
+    loadError: 'Lub rooj tshaj xo qhib tsis tau.',
     emptyUnder: (label) => `Tsis muaj ntawv nyob rau ${label} tam sim no.`,
     beFirst: 'Ua thawj tus tso ib tsab',
     readWhole: 'Nyeem tag nrho tsab ntawv',

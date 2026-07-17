@@ -174,7 +174,9 @@ logo: Oswald headings, Merriweather body, Courier Prime as the typewriter
 voice, site red `#dd3333`, and teal `#357a71` — sampled from the typewriter
 (`#3a867c`), then deepened a step so small teal text clears WCAG AA on the
 card cream. Fonts are self-hosted (Fontsource), so no reader request ever
-leaves the site. The signature element is the **editor's stamp** on every card —
+leaves the site. The board, submit dialog, and sign-in audit clean under
+axe-core (WCAG 2.1 AA + best-practice rules; `axe-core` ships as a dev
+dependency for re-auditing). The signature element is the **editor's stamp** on every card —
 `APPROVED · JUN 9` — because human review is the differentiator and the design
 should say so. `design/preview.html` is a self-contained comp: open it in any
 browser, no build required. Show it to the editor before anything ships.

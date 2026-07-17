@@ -17,9 +17,11 @@ export default class ErrorBoundary extends Component {
     if (this.state.error) {
       return (
         <div className="board">
-          <div className="board-error" role="alert">
-            <strong>The board hit a snag.</strong> Reload the page to try again.
-          </div>
+          <main>
+            <div className="board-error" role="alert">
+              <strong>The board hit a snag.</strong> Reload the page to try again.
+            </div>
+          </main>
         </div>
       );
     }

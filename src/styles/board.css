@@ -865,6 +865,7 @@ body {
   .card-actions,
   .card-body + .link-button,
   .board-empty .link-button,
+  .card-share-url,
   .lang-row,
   .modal-backdrop {
     display: none;

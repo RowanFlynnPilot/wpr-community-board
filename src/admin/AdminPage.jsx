@@ -32,27 +32,29 @@ function SignIn() {
 
   return (
     <div className="board admin">
-      <div className="card admin-signin">
-        <p className="board-eyebrow">Wausau Pilot &amp; Review</p>
-        <h1 className="card-title">The Editor&rsquo;s Desk</h1>
-        {error && <p className="form-error" role="alert">{error}</p>}
-        <label className="form-label">
-          Email
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-        </label>
-        <label className="form-label">
-          Password
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && signIn()}
-          />
-        </label>
-        <button className="board-cta" onClick={signIn}>
-          Sign in
-        </button>
-      </div>
+      <main>
+        <div className="card admin-signin">
+          <p className="board-eyebrow">Wausau Pilot &amp; Review</p>
+          <h1 className="card-title">The Editor&rsquo;s Desk</h1>
+          {error && <p className="form-error" role="alert">{error}</p>}
+          <label className="form-label">
+            Email
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          </label>
+          <label className="form-label">
+            Password
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && signIn()}
+            />
+          </label>
+          <button className="board-cta" onClick={signIn}>
+            Sign in
+          </button>
+        </div>
+      </main>
     </div>
   );
 }
@@ -176,6 +178,7 @@ function Desk() {
         </button>
       </header>
 
+      <main>
       {error && <p className="form-error" role="alert">{error}</p>}
 
       <nav className="filter-row" aria-label="Moderation queues">
@@ -217,6 +220,7 @@ function Desk() {
           ))}
         </div>
       )}
+      </main>
 
       {composing && (
         <ComposeModal
@@ -365,6 +369,7 @@ function ComposeModal({ onClose, onSubmitted }) {
           <input
             type="text"
             maxLength={60}
+            placeholder="Rib Mountain, East side, Kronenwetter…"
             value={form.neighborhood}
             onChange={(e) => update('neighborhood', e.target.value)}
           />

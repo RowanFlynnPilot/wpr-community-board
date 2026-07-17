@@ -32,7 +32,9 @@ export default function App() {
     <Suspense
       fallback={
         <div className="board">
-          <p className="board-loading">Opening the desk&hellip;</p>
+          <main>
+            <p className="board-loading">Opening the desk&hellip;</p>
+          </main>
         </div>
       }
     >

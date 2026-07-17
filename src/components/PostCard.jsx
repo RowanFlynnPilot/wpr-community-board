@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { logEvent } from '../lib/analytics';
 import { categoryLabel, CATEGORIES } from '../lib/categories';
 import { formatEventDate, formatStamp } from '../lib/dates';
-import { useI18n } from '../lib/i18n';
+import { DATE_LOCALES, useI18n } from '../lib/i18n';
 import { postUrl, useCopyLink } from '../lib/share';
 
 // Bodies longer than this get the CSS line clamp until the reader opens
@@ -60,7 +60,7 @@ export default function PostCard({ post, focused = false }) {
       <h2 className="card-title">{post.title}</h2>
 
       {post.event_date && (
-        <p className="card-event-date">{formatEventDate(post.event_date)}</p>
+        <p className="card-event-date">{formatEventDate(post.event_date, DATE_LOCALES[lang])}</p>
       )}
 
       <p className={`card-body ${needsClamp && !expanded ? 'is-clamped' : ''}`}>{post.body}</p>
