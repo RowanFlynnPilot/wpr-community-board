@@ -206,7 +206,16 @@ export function useI18n() {
 
 // localStorage can throw inside the embed (third-party storage blocked);
 // the toggle still works for the visit, it just won't persist.
+//
+// A ?lang= query param presets the language and wins over the stored
+// choice — it lets the newsletter and partner orgs link straight to the
+// Español or Hmoob board (e.g. .../?lang=hmn).
 export function readLang() {
+  const fromUrl = new URLSearchParams(window.location.search).get('lang');
+  if (fromUrl && STRINGS[fromUrl]) {
+    storeLang(fromUrl);
+    return fromUrl;
+  }
   try {
     const stored = localStorage.getItem('wpr_board_lang');
     return STRINGS[stored] ? stored : 'en';

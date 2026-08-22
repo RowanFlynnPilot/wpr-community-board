@@ -54,5 +54,8 @@ Notes:
   `https://wausaupilotandreview.com/community-board/#post-<id>` and the board
   opens with that card scrolled into view and highlighted. The post id is in
   every Share link, or copy it from the editor's desk.
+- Language editions: adding `?lang=es` or `?lang=hmn` to the iframe `src`
+  presets the board's language — useful for a dedicated Spanish or Hmong
+  page, or for links shared by partner organizations.
 - The `#/admin` desk is on the same deployment — never link it from the site;
   it's the editor's bookmark.

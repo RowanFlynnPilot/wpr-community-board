@@ -137,6 +137,10 @@ editor's desk stays English.
 There is no i18n framework: one strings object per language, a React
 context, and a test that fails if any language is missing a string.
 
+A `?lang=` query param presets the language: share
+`.../?lang=hmn` or `?lang=es` (or embed an iframe with that src) to give
+partner organizations a direct link to the Hmoob or Español board.
+
 ## Analytics & grant reporting
 
 Every interaction is captured first-party in the `events` table via
